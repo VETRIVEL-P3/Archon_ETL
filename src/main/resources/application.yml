@@ -1,0 +1,214 @@
+feign:
+  client:
+    default: connect-timeout:10 default.read-timeout:10
+spring:
+  database: MongoDB
+  application:
+    name: archon-authentication-service
+  cloud:
+    config:
+      uri:
+        - https://localhost:9100
+  kafka:
+    bootstrap-servers: ${messaging.service.host:localhost}:9092
+  swagger:
+    groupname: Archon-Authentication-Service
+    title: Authentication-Service
+    description: Authentication-Service API Documentation
+    version: 3.1
+
+  datasource:
+    url: jdbc:postgresql://${database.host:localhost}:${database.port:5432}/${database.name:postgres}?currentSchema=${database.schema:public}
+    username: ${database.username:postgres}
+    password: ${database.password:postgres}
+    driver-class-name: org.postgresql.Driver
+    initializatino-mode: always
+    hikari:
+      connection-timeout: 20000
+      maximumPoolSize: 20
+
+  jpa:
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database: postgresql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+ #data:
+ #  mongodb:
+ #    database: app-dev
+ #    port: ${database.port:27071}
+ #    host: ${database.host:localhost}
+ #    username: ${database.username:p3solutions}
+ #    password: ${database.password:Secret@123}
+  mvc:
+    locale: en_US
+server:
+  port: ${port:8100}
+  ssl:
+    enabled: false
+    key-store-type: PKCS12
+    key-store: archon.p12
+    key-store-password: p3solutions
+    key-alias: archon
+    trust-store: archon.p12
+    trust-store-password: p3solutions
+    trust-store-type: PKCS12
+    ciphers: ECDHE-RSA-AES256-GCM-SHA384,ECDHE-RSA-AES256-SHA384,ECDHE-RSA-AES256-SHA,ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES128-SHA256,ECDHE-RSA-AES128-SHA
+    enabled-protocols: TLSv1.2
+
+  servlet:
+    context-path: /v1/authentication-service/api
+eureka:
+  instance:
+    hostname: ${discovery.server.host:localhost}
+    instance-id: ${eureka.instance.ip-address}:${spring.application.name}:${spring.application.instance_id:${server.port}}
+    prefer-ip-address: true
+    ip-address: ${eureka.client.host:localhost}
+    secure-port-enabled: ${server.ssl.enabled}
+    secure-port: ${server.port}
+    non-secure-port-enabled: ${eureka.non_secure_port:true}
+  client:
+    #securePortEnabled: true
+    serviceUrl:
+      defaultZone: ${protocol.type:http}://${eureka.instance.hostname:localhost}:${discovery.server.port:8761}/eureka/
+    registerWithEureka: true
+    fetchRegistry: true
+jwt:
+  token:
+    issuer: application
+    signing-key: application####67890
+    sso:
+      secret-key: 841D8A6C80CBA4FCAD32D5367C18C53B
+  access:
+    token:
+      expiration: 24
+  refresh:
+    token:
+      expiration: 30
+client:
+  database:
+    key: product###archon@p3india
+logging:
+  file: archon-authentication-service.log
+inviteuser:
+  url: ${protocol.type:http}://${angular.app.host:localhost:9000}/sign-up
+resetPasswordUrl:
+  url: ${protocol.type:http}://${angular.app.host:localhost:9000}/auth/pwd-reset
+signInUrl:
+  url: ${protocol.type:http}://${angular.app.host:localhost:9000}/sign-in
+enableldapauth: ${enable.ldap.auth:false}
+mongo:
+  security:
+    enableSSL: ${mongo.ssl.enabled:false}
+kafka:
+  bootstrapAddress: ${messaging.service.host:localhost}:${messaging.service.port:9092}
+  group:
+    name:
+      preanalysis: ${workspace.creation.group:WorkspaceCreation}
+      workspace-update: ${workspace.update.group:WorkspaceUpdate}
+      send-email: SendEmail
+      audit: ${auditing.group:Auditing}
+      schema-analysis: ${schema.analysis.group:SchemaAnalysis}
+      spv-analysis: ${spv.analysis.group:SPVAnalysis}
+      workspace-adhoc-deletion: WorkspaceAdhocDeletion
+      ert-session: ErtSession
+      database-deletion: ${database.deletion.group:DatabaseDeletion}
+      dclendToend-deletion: ${dclendtoend.deletion.group:DclEndToEndDeletion}
+      deletion-workspace: ${workspace.deletion.group:DeletionWorkspace}
+      database-ertSession: ${database.ertsession.group:DatabaseErtSession}
+      schemaanalysis-killjob: ${schemaanslysiskilljob.group:SchemaAnalysisKillJob}
+      spvanalysis-killjob: ${spvanslysiskilljob.group:SpvAnalysisKillJob}
+      dataanalysis-closesession: ${dataanalysisclosesession.group:DataAnalysisCloseSession}
+      export-data: ExportData
+      export-data-killjob: ${exportdatakilljob.group:ExportDataKillJob}
+      logback-rolling: LogbackRolling
+  topic:
+    name:
+      preanalysis: WORKSPACE_CREATION
+      workspace-update: WORKSPACE_UPDATE
+      send-email: SEND_EMAIL
+      audit: AUDITING
+      schema-analysis: SCHEMA_ANALYSIS
+      spv-analysis: SPV_ANALYSIS
+      workspace-adhoc-deletion: WORKSPACE_ADHOC_DELETION
+      ert-session: ERT_SESSION
+      database-deletion: DATABASE_DELETION
+      dclendToend-deletion: DCL_ENDTOEND_DELETION
+      deletion-workspace: DELETION_WORKSPACE
+      database-ertSession: DATABASE_ERTSESSION
+      schemaanalysis-killjob: SCHEMAANALYSIS_KILLJOB
+      spvanalysis-killjob: SPVANALYSIS_KILLJOB
+      dataanalysis-closesession: DATAANALYSIS_CLOSE_SESSION
+      export-data: EXPORT_DATA
+      export-data-killjob: EXPORT_DATA_KILLJOB
+      logback-rolling: LOGBACK_ROLLING
+
+messenger:
+  topics:
+    replies-topic: REPLIES_AUTHENTICATION
+    replies-group: REPLIES_AUTHENTICATION_GROUP
+  topic:
+    name:
+      task-name: AUDITING
+  group:
+    name:
+      group-name: AUDITING
+
+# saml-sso arguments
+saml:
+  enabled: false
+  url:
+    entry-point: /saml/login/**
+    logout: /saml/logout/**
+    consumer-post-binding: /saml/SSO/**
+    single-logout: /saml/SingleLogout/**
+  idp:
+    entity-id: platform3
+    auth-server-url: ${saml.idp.url:http://localhost:9090/auth/realms/demo/protocol/saml/descriptor}
+    metadata-descriptor: /
+    logout-url: ${saml.logout.url:http://localhost:9000/v1/authentication-service/api/saml/logout}
+  security:
+    keyfile: /Users/seelan/coding/3_1_Archon/POC/samlKeystore.jks
+    keyfile-password: nalle123
+    keyfile-key: apollo
+    keyfile-key-password: nalle123
+    default-key: apollo
+  client:
+    redirect-url: http://localhost:4200/ssoRedirect
+  attribute:
+    firstname: urn:oid:2.5.4.4
+    lastname: urn:oid:2.5.4.42
+    email: urn:oid:1.2.840.113549.1.9.1
+  role:
+    name: Role
+    mapping-file: /Users/seelan/coding/3_1_Archon/POC/ENV/role_map.properties
+
+jasypt:
+  encryptor:
+    password: ${property_encryptor_password:jHqX01d3Bl42WjR0}
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+
+customlog:
+  path: ${log.path:.}
+  level: ${log.level:info}
+  profile: ${log.profile:LOGGER_STD}
+
+splunk:
+  token: ${log.splunk.token:28c0e5d4-6d8e-4729-9b3d-d6b428457531}
+  url: ${log.splunk.url:http://localhost:8088}
+
+archon:
+  version: ${version:3.1.0}
+  licensed: Platform 3 Solutions LLC
+
+commonAuth:
+  enabled: ${common.auth.enabled:false}
+  redirectUrl: ${common.auth.redirectUrl:http://localhost:9090/saml/landing}
+  logoutUrl: ${common.auth.logoutUrl:http://localhost:9090/auth/logout}
+
+encryption:
+  self: SAMPLE
+  aes:
+    key: SAMPLE
+

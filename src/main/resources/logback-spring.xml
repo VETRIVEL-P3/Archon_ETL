@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+    <springProperty defaultValue="archon-authentication-service" name="app_name" scope="context" source="spring.application.name"/>
+    <springProperty defaultValue="." name="log_path" scope="context" source="customlog.path"/>
+    <define name="propExists" class="ch.qos.logback.core.property.FileExistsPropertyDefiner">
+        <path>${log_path}/${app_name}/config/logback-included.xml</path>
+    </define>
+    <if condition="${propExists}">
+        <then>
+            <include file="${log_path}/${app_name}/config/logback-included.xml"/>
+        </then>
+        <else>
+            <springProperty defaultValue="info" name="log_level" scope="context" source="customlog.level"/>
+            <springProperty defaultValue="." name="log_path" scope="context" source="customlog.path"/>
+            <springProperty defaultValue="1" name="instance_id" scope="context"
+                            source="spring.application.instance_id"/>
+            <springProperty defaultValue="LOGGER_STD" name="profile" scope="context" source="customlog.profile"/>
+            <springProperty defaultValue="http://localhost:8088" name="splunk_url" scope="context" source="splunk.url"/>
+            <springProperty defaultValue="d6d2bbe5-c439-4ed0-94b8-721e93821da2" name="splunk_token" scope="context"
+                            source="splunk.token"/>
+            <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
+                <encoder>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M %line - %msg%n</pattern>
+                </encoder>
+            </appender>
+            <appender name="SPLUNK" class="com.splunk.logging.HttpEventCollectorLogbackAppender">
+                <url>${splunk_url}</url>
+                <index>archon-authentication-service</index>
+                <token>${splunk_token}</token>
+                <batch_size_count>10</batch_size_count>
+                <disableCertificateValidation>true</disableCertificateValidation>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%msg</pattern>
+                </layout>
+            </appender>
+            <if condition="(&quot;${profile}&quot;).contains(&quot;LOGGER_STD_FILE&quot;)">
+                <then>
+                    <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ROLLING">
+                        <encoder>
+                            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M %line - %msg%n</pattern>
+                        </encoder>
+                                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                                    <fileNamePattern>${log_path}/${app_name}/${app_name}_${instance_id}_%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+                                    <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                                        <maxFileSize>10MB</maxFileSize>
+                                    </timeBasedFileNamingAndTriggeringPolicy>
+                                    <maxHistory>90</maxHistory>
+                                    <totalSizeCap>500MB</totalSizeCap>
+                                    <cleanHistoryOnStart>true</cleanHistoryOnStart>
+                                </rollingPolicy>
+                    </appender>
+                    <root additivity="false" level="${log_level}">
+                        <appender-ref ref="ROLLING"/>
+                        <appender-ref ref="STDOUT"/>
+                        <appender-ref ref="SPLUNK"/>
+                    </root>
+                </then>
+                <else>
+                    <root additivity="false" level="${log_level}">
+                        <appender-ref ref="STDOUT"/>
+                        <appender-ref ref="SPLUNK"/>
+                    </root>
+                </else>
+            </if>
+        </else>
+    </if>
+</configuration>

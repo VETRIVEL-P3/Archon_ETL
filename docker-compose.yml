@@ -1,0 +1,50 @@
+version: '3.7'
+services: 
+  archon_authentication_service:
+    container_name: archon_authentication_service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: p3solutions/archon-authentication-service:3.1.10042020
+#    depends_on: 
+#        - discovery-server
+#        - messaging-service
+    expose: 
+        - 8100
+    ports:
+        - 8100:8100
+   # volumes:
+    #    - type: bind
+     #     source: /Users/syedsirajuddin/Documents/syedworkspace/
+      #    target: /CommonBackend_Bind_Mount
+    networks:
+        - archon-network
+    env_file: 
+      - archon-authentication-service.env
+      #- https.env
+
+#  discovery-server:
+#    container_name: discovery_server
+#    image: p3solutions/discovery-server:1.0
+#    expose: 
+#        - 8761
+#    ports:
+#        - 8761:8761
+#    networks:
+#        - archon-network
+#    env_file: discovery-server.env
+#  
+#  messaging-service:
+#    container_name: messaging_service
+#    image: p3solutions/messaging-service:1.0
+#    expose: 
+#        - 9092
+#    ports:
+#      - 9092:9092
+#    networks:
+#      - archon-network
+#    env_file: messaging-service.env
+
+networks:
+    archon-network:
+        driver: bridge
